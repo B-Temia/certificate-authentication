@@ -1,0 +1,7 @@
+obj
+bin
+v16
+.vs
+*.crt
+*.pfx
+*.csproj.user
