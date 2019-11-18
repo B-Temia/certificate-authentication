@@ -9,46 +9,68 @@ namespace ConsoleApp
 	{
 		static void Main(string[] args)
 		{
-			MainAsync().Wait();
+			var taskAuthorize = MainAuthorizeAsync();
+			var taskAnonymous = MainAnonymousAsync();
+
+			Task.WaitAll(taskAuthorize, taskAnonymous);
+
 			Console.Read();
 		}
 
-		static async Task MainAsync()
+		static async Task MainAuthorizeAsync()
 		{
-			var handler = new HttpClientHandler();
-			handler.ServerCertificateCustomValidationCallback = (request, cert, chain, errors) =>
+			using (var certificate = new X509Certificate2(@"..\..\..\..\certificates\keeogo-tw-00001.crt"))
 			{
-				return true;
-			};
-
-			using (var certificate = new X509Certificate2(@"..\..\..\..\certificates\keeogotestinter1leaf1.pfx", "1234"))
-			{
-				using (var client = new HttpClient(handler))
+				using (var client = new HttpClient())
 				{
 					var request = new HttpRequestMessage()
 					{
-						RequestUri = new Uri("https://localhost:5001/weatherforecast"),
+						RequestUri = new Uri("https://localhost:5001/authorize"),
 						Method = HttpMethod.Get,
 					};
 
 					request.Headers.Add("X-ARR-ClientCert", certificate.GetRawCertDataString());
-					request.Headers.Add("X-Client-Cert", certificate.GetRawCertDataString());
 					var response = await client.SendAsync(request);
-
 					if (response.IsSuccessStatusCode)
 					{
 						Console.WriteLine("******** Success ********");
 						var responseContent = await response.Content.ReadAsStringAsync();
-						Console.Write(responseContent);
+						Console.WriteLine(responseContent);
 					}
 					else
 					{
 						Console.WriteLine("********* Failed *********");
 						var responseContent = await response.Content.ReadAsStringAsync();
-						Console.Write(responseContent);
+						Console.WriteLine(responseContent);
 					}
 				}
 			}
+		}
+
+		static async Task MainAnonymousAsync()
+		{
+				using (var client = new HttpClient())
+				{
+					var request = new HttpRequestMessage()
+					{
+						RequestUri = new Uri("https://localhost:5001/anonymous"),
+						Method = HttpMethod.Get,
+					};
+
+					var response = await client.SendAsync(request);
+					if (response.IsSuccessStatusCode)
+					{
+						Console.WriteLine("******** Success ********");
+						var responseContent = await response.Content.ReadAsStringAsync();
+						Console.WriteLine(responseContent);
+					}
+					else
+					{
+						Console.WriteLine("********* Failed *********");
+						var responseContent = await response.Content.ReadAsStringAsync();
+						Console.WriteLine(responseContent);
+					}
+				}
 		}
 	}
 }

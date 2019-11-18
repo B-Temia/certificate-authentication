@@ -1,7 +1,11 @@
 obj
 bin
 v16
+
 .vs
 *.crt
 *.pfx
+*.cer
+*.key
+
 *.csproj.user
