@@ -7,5 +7,6 @@ v16
 *.pfx
 *.cer
 *.key
+*.pem
 
 *.csproj.user
