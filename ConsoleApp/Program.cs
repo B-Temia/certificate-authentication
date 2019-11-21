@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -10,23 +11,25 @@ namespace ConsoleApp
 		static void Main(string[] args)
 		{
 			var taskAuthorize = MainAuthorizeAsync();
-			var taskAnonymous = MainAnonymousAsync();
+			// var taskAnonymous = MainAnonymousAsync();
 
-			Task.WaitAll(taskAuthorize, taskAnonymous);
+			taskAuthorize.Wait();
+
+			// Task.WaitAll(MainAuthorizeAsync(), MainAuthorizeAsync(), MainAuthorizeAsync(), MainAuthorizeAsync());
 
 			Console.Read();
 		}
 
 		static async Task MainAuthorizeAsync()
 		{
-			using (var certificate = new X509Certificate2(@"..\..\..\..\certificates\keeogo-tw-00001.crt"))
+			using (var certificate = new X509Certificate2(@"..\..\..\..\certificates\keeogo_qc_00001.pfx", "1234"))
 			{
 				using (var client = new HttpClient())
 				{
 					var request = new HttpRequestMessage()
 					{
 						RequestUri = new Uri("https://localhost:5001/authorize"),
-						Method = HttpMethod.Get,
+						Method = HttpMethod.Post,
 					};
 
 					request.Headers.Add("X-ARR-ClientCert", certificate.GetRawCertDataString());
@@ -40,8 +43,7 @@ namespace ConsoleApp
 					else
 					{
 						Console.WriteLine("********* Failed *********");
-						var responseContent = await response.Content.ReadAsStringAsync();
-						Console.WriteLine(responseContent);
+						Console.WriteLine(response.ReasonPhrase);
 					}
 				}
 			}

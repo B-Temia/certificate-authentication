@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System;
-using System.Diagnostics;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -40,6 +40,9 @@ namespace WebApp
 					{
 						OnCertificateValidated = context =>
 						{
+
+							// return Task.FromException(new Exception("Bla bla bla"));
+
 							var claims = new[]
 							{
 									new Claim(ClaimTypes.NameIdentifier, context.ClientCertificate.Subject, ClaimValueTypes.String, context.Options.ClaimsIssuer),
@@ -68,8 +71,16 @@ namespace WebApp
 				{
 					if (!string.IsNullOrWhiteSpace(headerValue))
 					{
-						var bytes = StringToByteArray(headerValue);
-						return new X509Certificate2(bytes);
+						try
+						{
+							var bytes = StringToByteArray(headerValue);
+							return new X509Certificate2(bytes);
+						}
+						catch (Exception)
+						{
+							return null;
+						}
+
 					}
 
 					return null;
@@ -92,6 +103,25 @@ namespace WebApp
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UseExceptionHandler(configure =>
+			{
+				configure.Run(async context =>
+				{
+					context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+					//context.Response.ContentType = "application/json";
+
+					//var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+					//if (contextFeature != null)
+					//{
+					//await context.Response.WriteAsync(new
+					//{
+					//	statusCode = context.Response.StatusCode,
+					//	message = "Internal Server Error."
+					//}.ToString());
+					//}
+				});
+			});
+
 			app.UseRouting();
 			app.UseCertificateForwarding();
 

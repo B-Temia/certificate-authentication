@@ -8,5 +8,9 @@ v16
 *.cer
 *.key
 *.pem
+*.conf
+*.csr
+
+certificates/rootCA
 
 *.csproj.user

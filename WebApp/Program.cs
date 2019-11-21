@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 namespace WebApp
@@ -20,10 +19,14 @@ namespace WebApp
 					webBuilder.UseStartup<Startup>();
 					webBuilder.ConfigureKestrel(serverOptions =>
 					{
-						var cert = new X509Certificate2(Path.Combine("..", "certificates", "localhost.pfx"), "1234");
-						serverOptions.ListenLocalhost(5001, listenOptions =>
+						var cert = new X509Certificate2(@"..\certificates\localhost.pfx", "1234");
+						serverOptions.ListenAnyIP(5001, listenOptions =>
+					   {
+						   listenOptions.UseHttps(cert);
+					   });
+
+						serverOptions.ListenAnyIP(5000, listenOptions =>
 						{
-							listenOptions.UseHttps(cert);
 						});
 					});
 				});
